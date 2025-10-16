@@ -4,7 +4,7 @@
 
 project:
   # Full project name (e.g., "AfriGen QC Toolkit")
-  name: "{{ PROJECT_NAME }}"
+  name: "My Test Nextflow Pipeline"
 
   # Brief description of your project
   description: "{{ PROJECT_DESCRIPTION }}"
@@ -13,7 +13,7 @@ project:
   repo_name: "{{ REPO_NAME }}"
 
   # Version number
-  version: "{{ VERSION }}"
+  version: "V1.0.0"
 
 author:
   # Your name or organization name
