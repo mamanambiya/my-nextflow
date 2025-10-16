@@ -1,0 +1,168 @@
+name: Initialize Template
+
+on:
+  push:
+    paths:
+      - 'template.config.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  initialize:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'Configure project variables') || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Replace template variables
+        run: |
+          python3 << 'EOF'
+          import yaml
+          import os
+          import glob
+          import re
+
+          # Read configuration
+          with open('template.config.yml', 'r') as f:
+              config = yaml.safe_load(f)
+
+          # Flatten nested config into simple key-value pairs
+          replacements = {}
+
+          def flatten_dict(d, parent_key=''):
+              for k, v in d.items():
+                  if isinstance(v, dict):
+                      flatten_dict(v, parent_key)
+                  else:
+                      # Convert to template variable format
+                      var_name = k.upper().replace('-', '_')
+                      replacements[f'{{{{ {var_name} }}}}'] = str(v)
+
+          flatten_dict(config)
+
+          # Add default year if not set
+          if '{{ YEAR }}' in replacements.values():
+              from datetime import datetime
+              replacements['{{ YEAR }}'] = str(datetime.now().year)
+
+          print("Variables to replace:")
+          for key, value in replacements.items():
+              if not value.startswith('{{'):  # Only show configured values
+                  print(f"  {key} -> {value}")
+
+          # Files to process
+          file_patterns = [
+              '**/*.md',
+              '**/*.yml',
+              '**/*.yaml',
+              '**/*.json',
+              '**/*.py',
+              '**/*.r',
+              '**/*.R',
+              '**/*.sh',
+              '**/*.txt',
+              'LICENSE',
+          ]
+
+          files_processed = 0
+          replacements_made = 0
+
+          for pattern in file_patterns:
+              for filepath in glob.glob(pattern, recursive=True):
+                  # Skip this workflow and the config file
+                  if filepath in ['template.config.yml', '.github/workflows/init-template.yml']:
+                      continue
+
+                  # Skip hidden directories and git directory
+                  if '/.git/' in filepath or filepath.startswith('.git/'):
+                      continue
+
+                  try:
+                      with open(filepath, 'r', encoding='utf-8') as f:
+                          content = f.read()
+
+                      original_content = content
+
+                      # Replace all variables
+                      for old, new in replacements.items():
+                          if old in content and not new.startswith('{{'):
+                              content = content.replace(old, new)
+
+                      # Only write if changes were made
+                      if content != original_content:
+                          with open(filepath, 'w', encoding='utf-8') as f:
+                              f.write(content)
+                          files_processed += 1
+                          replacements_made += content.count(new) - original_content.count(new)
+                          print(f"Updated: {filepath}")
+
+                  except (UnicodeDecodeError, PermissionError):
+                      # Skip binary files or files we can't read
+                      pass
+
+          print(f"\nSummary:")
+          print(f"  Files processed: {files_processed}")
+          print(f"  Replacements made: {replacements_made}")
+
+          # Create completion marker
+          with open('.template-initialized', 'w') as f:
+              f.write('Template initialized successfully\n')
+
+          EOF
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Initialize project from template
+
+          - Replaced all template variables with configured values
+          - Project is now ready for development
+
+          This is an automated commit from the template initialization workflow." || echo "No changes to commit"
+
+      - name: Remove initialization files
+        run: |
+          git rm template.config.yml
+          git rm .github/workflows/init-template.yml
+          git commit -m "Remove template initialization files
+
+          Template configuration is complete. These files are no longer needed:
+          - template.config.yml
+          - .github/workflows/init-template.yml
+
+          Your project is now fully configured and ready to use!" || echo "No files to remove"
+
+      - name: Push changes
+        run: git push origin main
+
+      - name: Summary
+        run: |
+          echo "✅ Template initialization complete!"
+          echo ""
+          echo "Your project has been configured with your custom values."
+          echo "The template configuration files have been removed."
+          echo ""
+          echo "Next steps:"
+          echo "1. Review the changes in your repository"
+          echo "2. Update any remaining placeholder text"
+          echo "3. Start developing your project!"

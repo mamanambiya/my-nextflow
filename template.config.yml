@@ -1,0 +1,66 @@
+# AfriGen-D Template Configuration
+# Edit these values to customize your project
+# After editing, commit this file and the GitHub Action will automatically replace all template variables
+
+project:
+  # Full project name (e.g., "AfriGen QC Toolkit")
+  name: "{{ PROJECT_NAME }}"
+
+  # Brief description of your project
+  description: "{{ PROJECT_DESCRIPTION }}"
+
+  # GitHub repository name (must match your repo name exactly)
+  repo_name: "{{ REPO_NAME }}"
+
+  # Version number
+  version: "{{ VERSION }}"
+
+author:
+  # Your name or organization name
+  name: "{{ AUTHOR_NAMES }}"
+
+  # Contact email
+  email: "{{ AUTHOR_EMAIL }}"
+
+  # Copyright year
+  year: "{{ YEAR }}"
+
+technical:
+  # Primary programming language (e.g., Python, R, JavaScript)
+  language: "{{ LANGUAGE }}"
+
+  # Minimum version required (e.g., 3.8 for Python 3.8+)
+  min_version: "{{ MIN_VERSION }}"
+
+  # Installation command (e.g., "pip install my-tool")
+  install_command: "{{ INSTALL_COMMAND }}"
+
+  # Testing command (e.g., "pytest tests/")
+  test_command: "{{ TEST_COMMAND }}"
+
+genomics:
+  # Type of analysis (e.g., "Variant calling", "Genome-wide imputation")
+  analysis_type: "{{ ANALYSIS_TYPE }}"
+
+  # Input data format (e.g., "VCF files", "FASTQ files")
+  data_type: "{{ DATA_TYPE }}"
+
+  # Reference genome build (e.g., "GRCh38", "GRCh37")
+  genome_build: "{{ GENOME_BUILD }}"
+
+  # Target populations (e.g., "African ancestry populations")
+  populations: "{{ POPULATIONS }}"
+
+optional:
+  # DOI if published (leave as is if not available)
+  doi: "{{ DOI }}"
+
+  # Google Analytics ID for documentation (optional)
+  google_analytics_id: "{{ GOOGLE_ANALYTICS_ID }}"
+
+# Instructions:
+# 1. Replace all {{ VARIABLE }} values above with your project-specific information
+# 2. Commit this file: git add template.config.yml && git commit -m "Configure project variables"
+# 3. Push to GitHub: git push origin main
+# 4. The GitHub Action will automatically run and replace all variables in your project files
+# 5. After successful run, the workflow will delete itself and this config file
