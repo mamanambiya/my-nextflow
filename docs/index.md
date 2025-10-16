@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "My Nextflow"
   text: "{{ HERO_TEXT }}"
-  tagline: "{{ PROJECT_TAGLINE }}"
+  tagline: "My Nextflow"
   actions:
     - theme: brand
       text: Get Started
